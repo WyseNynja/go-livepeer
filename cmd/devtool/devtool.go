@@ -87,13 +87,12 @@ func main() {
 	acc := createKey(tempKeystoreDir)
 	glog.Infof("Using account %s", acc)
 	dataDir := filepath.Join(*baseDataDir, t+"_"+acc)
-	dataDirToCreate := filepath.Join(dataDir, "devenv")
-	err = os.MkdirAll(dataDirToCreate, 0755)
+	err = os.MkdirAll(dataDir, 0755)
 	if err != nil {
 		glog.Fatalf("Can't create directory %v", err)
 	}
 
-	keystoreDir := filepath.Join(dataDirToCreate, "keystore")
+	keystoreDir := filepath.Join(dataDir, "keystore")
 	err = os.Rename(tempKeystoreDir, keystoreDir)
 	if err != nil {
 		glog.Fatal(err)
@@ -263,9 +262,13 @@ func createRunScript(ethAcctAddr, dataDir string, isBroadcaster bool) {
 
 	if !isBroadcaster {
 		script += fmt.Sprintf(` -initializeRound=true \
-    -serviceAddr 127.0.0.1:8936 -httpAddr 127.0.0.1:8936  -transcoder \
+    -serviceAddr 127.0.0.1:8936 -httpAddr 127.0.0.1:8936  -transcoder=true -orchestrator=true \
     -cliAddr 127.0.0.1:7936 -ipfsPath ./%s/trans
     `, dataDir)
+	}
+
+	if isBroadcaster {
+		script += fmt.Sprint(` -broadcaster=true`)
 	}
 
 	glog.Info(script)
